@@ -25,7 +25,7 @@ class VkTools():
                      }
         return user_info
 
-    def serch_users(self, params):
+    def serch_users(self, params, offset):
 
         sex = 1 if params['sex'] == 2 else 2
         city = params['city']
@@ -35,9 +35,10 @@ class VkTools():
         age_from = age - 5
         age_to = age + 5
 
+
         users = self.api.method('users.search',
                                 {'count': 10,
-                                 'offset': 0,
+                                 'offset': offset,
                                  'age_from': age_from,
                                  'age_to': age_to,
                                  'sex': sex,
@@ -91,6 +92,9 @@ class VkTools():
 
 if __name__ == '__main__':
     bot = VkTools(acces_token)
-    params = bot.get_profile_info(789657038)
+    params = bot.get_profile_info(261949807)
     users = bot.serch_users(params)
+    print(users)
     print(bot.get_photos(users[2]['id']))
+    users = bot.serch_users(params)
+    print(users)
