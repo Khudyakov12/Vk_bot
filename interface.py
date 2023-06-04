@@ -24,6 +24,21 @@ class BotInterface():
                                'random_id': get_random_id()
                                }
                               )
+    def this_hometown(self, command):  # this hometown?
+        i = self.params['bdate']
+        j = self.params['hometown']
+        self.params['bdate'] = "20"
+        self.params['hometown'] = command.title()
+        users = self.api.search_users(self.params, self.offset)
+        if len(users) == 0:
+            self.params['bdate'] = i
+            self.params['hometown'] = j
+            return False
+        else:
+            self.params['bdate'] = i
+            self.params['hometown'] = j
+            return True
+
 
     def event_handler(self):
         longpoll = VkLongPoll(self.interface)
@@ -38,14 +53,18 @@ class BotInterface():
                     if(self.params['hometown'] == None):
                         self.message_send(event.user_id, f'Введите ваш город')
 
-                elif (self.params['hometown'] == None):
-                    self.params['hometown'] = command.title()
-                    if (self.params['bdate'] == None):
-                        self.message_send(event.user_id, f'Введите ваш возраст')
+                elif (self.params != None and self.params['hometown'] == None):
+                    if (command.title().isalpha() and self.this_hometown(command)):
+                        self.params['hometown'] = command.title()
+                        print(self.params)
+                        if (self.params['bdate'] == None):
+                            self.message_send(event.user_id, f'Введите ваш возраст')
+                        else:
+                            self.message_send(event.user_id, f'Все готово для поиска')
                     else:
-                        self.message_send(event.user_id, f'Все готово для поиска')
+                        self.message_send(event.user_id, f'Неверно введен город')
 
-                elif (self.params['bdate'] == None):
+                elif (self.params != None and self.params['bdate'] == None and self.params['hometown'] != None):
                     if command.isdigit():
                         self.params['bdate'] = command
                         self.message_send(event.user_id, f'Все готово для поиска')
@@ -64,7 +83,7 @@ class BotInterface():
                         users = self.api.search_users(self.params, self.offset)
                     user = users.pop()
 
-                    # здесь логика дял проверки бд
+                    # здесь логика для проверки бд
                     while check_user(self.params['id'], user["id"]):
                         users = self.api.search_users(self.params, self.offset)
                         user = users.pop()
@@ -87,7 +106,7 @@ class BotInterface():
 
                 elif command == 'пока':
                     self.message_send(event.user_id, 'пока')
-                elif (self.params['hometown'] != None and self.params['bdate'] != None):
+                elif (self.params == None or self.params['hometown'] != None and self.params['bdate'] != None):
                     self.message_send(event.user_id, 'команда не опознана')
 
 
