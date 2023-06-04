@@ -13,28 +13,29 @@ class VkTools():
 
         info, = self.api.method('users.get',
                                 {'user_id': user_id,
-                                 'fields': 'city,bdate,sex,relation,home_town'
+                                 'fields': 'city,bdate,sex,relation'
                                  }
                                 )
         user_info = {'name': info['first_name'] + ' ' + info['last_name'],
                      'id': info['id'],
                      'bdate': info['bdate'] if 'bdate' in info else None,
-                     'home_town': info['home_town'],
                      'sex': info['sex'],
-                     'city': info['city']['id']
+                     'hometown': info['hometown'] if 'hometown' in info else None
                      }
         return user_info
 
-    def serch_users(self, params, offset):
+    def search_users(self, params, offset):
 
         sex = 1 if params['sex'] == 2 else 2
-        city = params['city']
+        hometown = params['hometown']
         curent_year = datetime.now().year
-        user_year = int(params['bdate'].split('.')[2])
+        if params['bdate'].isdigit():
+            user_year = curent_year - int(params['bdate'])
+        else:
+            user_year = int(params['bdate'].split('.')[2])
         age = curent_year - user_year
         age_from = age - 5
         age_to = age + 5
-
 
         users = self.api.method('users.search',
                                 {'count': 10,
@@ -42,7 +43,7 @@ class VkTools():
                                  'age_from': age_from,
                                  'age_to': age_to,
                                  'sex': sex,
-                                 'city': city,
+                                 'hometown': hometown,
                                  'status': 6,
                                  'is_closed': False
                                  }
@@ -92,9 +93,6 @@ class VkTools():
 
 if __name__ == '__main__':
     bot = VkTools(acces_token)
-    params = bot.get_profile_info(261949807)
-    users = bot.serch_users(params)
-    print(users)
-    print(bot.get_photos(users[2]['id']))
-    users = bot.serch_users(params)
-    print(users)
+    params = bot.get_profile_info(579920642)
+
+

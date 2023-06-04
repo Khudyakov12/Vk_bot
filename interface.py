@@ -35,14 +35,41 @@ class BotInterface():
                 if command == 'привет':
                     self.params = self.api.get_profile_info(event.user_id)
                     self.message_send(event.user_id, f'здравствуй {self.params["name"]}')
+                    if(self.params['hometown'] == None):
+                        self.message_send(event.user_id, f'Введите ваш город')
+
+                elif (self.params['hometown'] == None):
+                    self.params['hometown'] = command.title()
+                    if (self.params['bdate'] == None):
+                        self.message_send(event.user_id, f'Введите ваш возраст')
+                    else:
+                        self.message_send(event.user_id, f'Все готово для поиска')
+
+                elif (self.params['bdate'] == None):
+                    if command.isdigit():
+                        self.params['bdate'] = command
+                        self.message_send(event.user_id, f'Все готово для поиска')
+                        print(self.params)
+                    else:
+                        self.message_send(event.user_id, f'Неверно введен возраст')
+
+
+
                 elif command == 'поиск':
-                    users = self.api.serch_users(self.params, self.offset)
+                    self.message_send(event.user_id,f'Идет поиск...')
+                    users = self.api.search_users(self.params, self.offset)
                     self.offset += 10
+                    while len(users) == 0:
+                        print(len(users))
+                        users = self.api.search_users(self.params, self.offset)
                     user = users.pop()
 
                     # здесь логика дял проверки бд
-                    if check_user(self.params['id'], user["id"]):
-                        users = self.api.serch_users(self.params, self.offset)
+                    while check_user(self.params['id'], user["id"]):
+                        users = self.api.search_users(self.params, self.offset)
+                        user = users.pop()
+                        self.offset += 10
+                        print(user['name'])
 
                     photos_user = self.api.get_photos(user['id'])
 
@@ -60,7 +87,7 @@ class BotInterface():
 
                 elif command == 'пока':
                     self.message_send(event.user_id, 'пока')
-                else:
+                elif (self.params['hometown'] != None and self.params['bdate'] != None):
                     self.message_send(event.user_id, 'команда не опознана')
 
 
